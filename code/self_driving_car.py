@@ -4,12 +4,12 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
-from keras.utils.np_utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 import random
 from PIL import Image
 import cv2
-from keras.layers.convolutional import Convolution2D
-from keras.layers.convolutional import MaxPooling2D
+from keras.layers import Conv2D
+from keras.layers import MaxPooling2D
 from keras.layers import Flatten
 from keras.layers import Dropout
 from keras.preprocessing.image import ImageDataGenerator
@@ -68,11 +68,11 @@ def preprocess_img_no_imread(img):
 
 def nvidia_model():
     model = Sequential()
-    model.add(Convolution2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='elu'))
-    model.add(Convolution2D(36, (5, 5), strides=(2, 2), activation='elu'))
-    model.add(Convolution2D(48, (5, 5), strides=(2, 2), activation='elu'))
-    model.add(Convolution2D(64, (3, 3), activation='elu'))
-    model.add(Convolution2D(64, (3, 3), activation='elu'))
+    model.add(Conv2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='elu'))
+    model.add(Conv2D(36, (5, 5), strides=(2, 2), activation='elu'))
+    model.add(Conv2D(48, (5, 5), strides=(2, 2), activation='elu'))
+    model.add(Conv2D(64, (3, 3), activation='elu'))
+    model.add(Conv2D(64, (3, 3), activation='elu'))
     #model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(100, activation='elu'))
