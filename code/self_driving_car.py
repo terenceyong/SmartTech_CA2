@@ -113,7 +113,7 @@ def img_random_flip(image_to_flip, steering_angle):
 
 
 def random_augment(image_to_augment, steering_angle):
-    augment_image = mpimg.imread(image_to_augment)
+    augment_image = image_to_augment.copy()  # Made a copy to avoid modifying the original image
     if np.random.rand() < 0.5:
         augment_image = zoom(augment_image)
     if np.random.rand() < 0.5:
