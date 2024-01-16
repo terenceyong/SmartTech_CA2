@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.utils import to_categorical
+from keras.callbacks import EarlyStopping
 import random
 from PIL import Image
 import cv2
@@ -263,15 +264,19 @@ plt.show()
 model = nvidia_model()
 print(model.summary())
 
+early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
 history = model.fit(
     batch_generator(X_train, y_train, 200, 1),
     steps_per_epoch=100,
     epochs=30,
     validation_data=batch_generator(X_valid, y_valid, 200, 0),
     validation_steps=200,
+    callbacks=[early_stop],
     verbose=1,
     shuffle=True
 )
+
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
