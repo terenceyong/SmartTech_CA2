@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 speed_limit = 20
 
+
 def preprocess_img(img):
     img = img[60:135, :, :]
     img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
@@ -22,33 +23,30 @@ def preprocess_img(img):
     img = img/255
     return img
 
+
 def send_control(steering_angle, throttle):
     sio.emit('steer', data={'steering_angle':steering_angle.__str__(), 'throttle':throttle.__str__()})
 
+
 @sio.on('telemetry')
 def telemetry(sid, data):
-        image = Image.open(BytesIO(based64.b64decode(data['image'])))
-        image = np.asarray(image)
-        image = preprocess_img(image)
-        image = np.array([image])
-        speed = float(data['speed'])
-        throttle = 1.0 - speed/speed_limit
-        steering_angle = float(model.predict(image))
-        send_control(steering_angle, throttle)
+    image = Image.open(BytesIO(base64.b64decode(data['image'])))
+    image = np.asarray(image)
+    image = preprocess_img(image)
+    image = np.array([image])
+    speed = float(data['speed'])
+    throttle = 1.0 - speed/speed_limit
+    steering_angle = float(model.predict(image))
+    send_control(steering_angle, throttle)
+
 
 @sio.on('connect')
 def connect(sid, environ):
-     print("Connected")
-     send_control(0, 0)
+    print("Connected")
+    send_control(0, 0)
+
 
 if __name__ == '__main__':
     model = load_model('model.h5')
-    print(f"Training samples: {len(X_train)}")
-    print(f"Validation samples: {len(X_valid)}")
-    print("Steering angles distribution in training data:")
-    print(np.histogram(y_train, bins=25))
-
     app = socketio.Middleware(sio, app)
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
-
-
