@@ -25,21 +25,21 @@ def path_leaf(path):
     return tail
 
 
-def load_steering_img(data_dir, df):
+def load_steering_img(datadir, df):
     image_path = []
     steering = []
-    for i in range(len(df)):
+    for i in range(len(df)):  # Corrected to use len(df)
         indexed_data = df.iloc[i]
-        centre, left, right = indexed_data[0], indexed_data[1], indexed_data[2]
-        image_path.append(os.path.join(data_dir, centre.strip()))
+        center, left, right = indexed_data[0], indexed_data[1], indexed_data[2]
+        image_path.append(os.path.join(datadir, center.strip()))
         steering.append(float(indexed_data[3]))
-        image_path.append(os.path.join(data_dir, left.strip()))
+        image_path.append(os.path.join(datadir, left.strip()))
         steering.append(float(indexed_data[3]) + 0.15)
-        image_path.append(os.path.join(data_dir, right.strip()))
+        image_path.append(os.path.join(datadir, right.strip()))
         steering.append(float(indexed_data[3]) - 0.15)
     image_paths = np.asarray(image_path)
-    steerings = np.asarray(steering)
-    return image_paths, steerings
+    steering = np.asarray(steering)
+    return image_paths, steering
 
 
 def preprocess_img(img):
@@ -63,15 +63,15 @@ def preprocess_img_no_imread(img):
 
 def nvidia_model():
     model = Sequential()
-    model.add(Conv2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='elu'))
-    model.add(Conv2D(36, (5, 5), strides=(2, 2), activation='elu'))
-    model.add(Conv2D(48, (5, 5), strides=(2, 2), activation='elu'))
-    model.add(Conv2D(64, (3, 3), activation='elu'))
-    model.add(Conv2D(64, (3, 3), activation='elu'))
+    model.add(Conv2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='relu'))
+    model.add(Conv2D(36, (5, 5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(48, (5, 5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(Flatten())
-    model.add(Dense(100, activation='elu'))
-    model.add(Dense(50, activation='elu'))
-    model.add(Dense(10, activation='elu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(10, activation='relu'))
     model.add(Dense(1))
     optimizer = Adam(learning_rate=0.0001)
     model.compile(loss='mse', optimizer=optimizer)
@@ -145,7 +145,7 @@ data['left'] = data['left'].apply(path_leaf)
 data['right'] = data['right'].apply(path_leaf)
 
 num_bins = 25
-samples_per_bin = 400
+samples_per_bin = 200
 hist, bins = np.histogram(data['steering'], num_bins)
 centre = (bins[:-1] + bins[1:]) * 0.5
 plt.bar(centre, hist, width=0.05)
@@ -154,6 +154,9 @@ plt.show()
 
 remove_list = []
 print('Total data: ', len(data))
+
+print("Total number of images for training set:", len(X_train))
+print("Total number of images for validation set:", len(X_valid))
 
 for j in range(num_bins):
     list_ = []
@@ -262,8 +265,8 @@ print(model.summary())
 
 history = model.fit(
     batch_generator(X_train, y_train, 200, 1),
-    steps_per_epoch=10,
-    epochs=5,
+    steps_per_epoch=100,
+    epochs=30,
     validation_data=batch_generator(X_valid, y_valid, 200, 0),
     validation_steps=200,
     verbose=1,
