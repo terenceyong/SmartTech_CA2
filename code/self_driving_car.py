@@ -286,6 +286,7 @@ def lr_scheduler(epoch, lr):
 model = nvidia_model()
 early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 learning_rate_scheduler = LearningRateScheduler(lr_scheduler)
+early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
 history = model.fit(
     batch_generator(X_train, y_train, batch_size=200, is_training=1),
