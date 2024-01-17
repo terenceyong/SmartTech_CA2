@@ -88,6 +88,7 @@ def nvidia_model():
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(Flatten())
     model.add(Dense(100, activation='relu'))
+    model.add(Dropout(0.5))  # Added a dropout to prevent overfitting
     model.add(Dense(50, activation='relu'))
     model.add(Dense(10, activation='relu'))
     model.add(Dense(1))
@@ -172,9 +173,6 @@ plt.show()
 remove_list = []
 print('Total data: ', len(data))
 
-print("Total number of images for training set:", len(X_train))
-print("Total number of images for validation set:", len(X_valid))
-
 for j in range(num_bins):
     list_ = []
     for i in range(len(data['steering'])):
@@ -196,6 +194,9 @@ plt.show()
 image_paths, steerings = load_steering_img(datadir + '/IMG', data)
 X_train, X_valid, y_train, y_valid = train_test_split(image_paths, steerings, test_size=0.2, random_state=6)
 print(f"Training samples {len(X_train)}\n Validation samples {len(X_valid)}")
+
+print("Total number of images for training set:", len(X_train))
+print("Total number of images for validation set:", len(X_valid))
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 axes[0].hist(y_train, bins=num_bins, width=0.05, color='blue')
@@ -277,6 +278,11 @@ for i in range(10):
     axs[i][1].set_title("Augmented Image")
 plt.show()
 
+def lr_scheduler(epoch, lr):
+    if epoch % 5 == 0:
+        lr /= 2
+    return lr
+
 model = nvidia_model()
 early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 learning_rate_scheduler = LearningRateScheduler(lr_scheduler)
@@ -284,18 +290,17 @@ learning_rate_scheduler = LearningRateScheduler(lr_scheduler)
 
 early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
+
 history = model.fit(
     batch_generator(X_train, y_train, 200, 1),
-    steps_per_epoch=100,
-    epochs=30,
+    steps_per_epoch=50,  # reduce the number of steps
+    epochs=10,  # reduce the number of epochs
     validation_data=batch_generator(X_valid, y_valid, 200, 0),
-    validation_steps=200,
+    validation_steps=50,  # reduce the number of validation steps
     callbacks=[early_stop],
     verbose=1,
-    shuffle=True,
-    callbacks=[early_stopping, learning_rate_scheduler]
+    shuffle=True
 )
-
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
