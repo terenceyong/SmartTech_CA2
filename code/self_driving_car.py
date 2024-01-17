@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import keras
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
@@ -19,6 +19,7 @@ from matplotlib import image as mpimg
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from imgaug import augmenters as iaa
+from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
 
 
 def path_leaf(path):
@@ -62,6 +63,22 @@ def preprocess_img_no_imread(img):
     return img
 
 
+# def nvidia_model():
+#     model = Sequential()
+#     model.add(Conv2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='elu'))
+#     model.add(Conv2D(36, (5, 5), strides=(2, 2), activation='elu'))
+#     model.add(Conv2D(48, (5, 5), strides=(2, 2), activation='elu'))
+#     model.add(Conv2D(64, (3, 3), activation='elu'))
+#     model.add(Conv2D(64, (3, 3), activation='elu'))
+#     model.add(Flatten())
+#     model.add(Dense(100, activation='elu'))
+#     model.add(Dense(50, activation='elu'))
+#     model.add(Dense(10, activation='elu'))
+#     model.add(Dense(1))
+#     optimizer = Adam(learning_rate=0.0001)
+#     model.compile(loss='mse', optimizer=optimizer)
+#     return model
+
 def nvidia_model():
     model = Sequential()
     model.add(Conv2D(24, (5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='relu'))
@@ -77,7 +94,6 @@ def nvidia_model():
     optimizer = Adam(learning_rate=0.0001)
     model.compile(loss='mse', optimizer=optimizer)
     return model
-
 
 def zoom(image_to_zoom):
     zoom_func = iaa.Affine(scale=(1, 1.3))
@@ -262,7 +278,9 @@ for i in range(10):
 plt.show()
 
 model = nvidia_model()
-print(model.summary())
+early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+learning_rate_scheduler = LearningRateScheduler(lr_scheduler)
+
 
 early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
@@ -274,7 +292,8 @@ history = model.fit(
     validation_steps=200,
     callbacks=[early_stop],
     verbose=1,
-    shuffle=True
+    shuffle=True,
+    callbacks=[early_stopping, learning_rate_scheduler]
 )
 
 
