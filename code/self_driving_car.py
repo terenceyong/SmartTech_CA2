@@ -287,16 +287,12 @@ model = nvidia_model()
 early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
 learning_rate_scheduler = LearningRateScheduler(lr_scheduler)
 
-
-early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
-
-
 history = model.fit(
-    batch_generator(X_train, y_train, 200, 1),
-    steps_per_epoch=50,  # reduce the number of steps
-    epochs=10,  # reduce the number of epochs
-    validation_data=batch_generator(X_valid, y_valid, 200, 0),
-    validation_steps=50,  # reduce the number of validation steps
+    batch_generator(X_train, y_train, batch_size=200, is_training=1),
+    steps_per_epoch=50,
+    epochs=10,
+    validation_data=batch_generator(X_valid, y_valid, batch_size=200, is_training=0),
+    validation_steps=50,
     callbacks=[early_stop],
     verbose=1,
     shuffle=True

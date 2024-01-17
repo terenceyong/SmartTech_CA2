@@ -12,7 +12,7 @@ from matplotlib import image as mpimg
 sio = socketio.Server()
 app = Flask(__name__)
 
-speed_limit = 30
+speed_limit = 15
 
 
 def preprocess_img(img):
